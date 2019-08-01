@@ -36,6 +36,10 @@ variables_tex = {
                     "bestRecoZPt"                       : "$p_{T}(LL)$",
                     "PhotonPt"                          : "$p_{T}^{\gamma}$",
                     "PhotonEta"                         : "$\eta^{\gamma}$",
+                    "dR_RecoPhotonGenPhoton0to2"        : "$\Delta R \\left( \\mathrm{recoPhoton, genPhoton} \\right)$",
+                    "dR_RecoPhotonGenParton0to2"        : "$\Delta R \\left( \\mathrm{recoPhoton, genParton} \\right)$",
+                    "dR_RecoPhotonGenPhoton_0to2"       : "$\Delta R \\left( \\mathrm{recoPhoton, genPhoton} \\right)$",
+                    "dR_RecoPhotonGenParton_0to2"       : "$\Delta R \\left( \\mathrm{recoPhoton, genParton} \\right)$",
                     "bestRecoZM_50to250"                : "$m_{LL}$",
                     "bestRecoZM_50to250_NBeq0_NSVeq0"   : "$m_{LL}\ \\left(N_{b} = 0, N_{sv} = 0\\right)$",
                     "bestRecoZM_50to250_NBeq0_NSVge1"   : "$m_{LL}\ \\left(N_{b} = 0, N_{sv} \geq 1\\right)$",
@@ -96,8 +100,8 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
 def writeSlideCuts(f, runMap, fileString, variable, cuts, era, title):
     n = len(cuts)
     width = 1.0 / float(n)
-    x = 0
-    dx = int(16 / n)
+    x = 1
+    dx = int(15 / n)
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for c in cuts:
         c_tex = cuts_tex[c]
@@ -158,15 +162,20 @@ def makeSlidesEras(json_file, verbose):
     j.close()
 
 def makeSlidesCuts(json_file, verbose):
-    #eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
-    eras = ["2016"]
-    #regions = ["LowDM", "HighDM"]
-    regions = ["LowDM"]
+    eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
+    #eras = ["2016"]
+    regions = ["LowDM", "HighDM"]
+    #regions = ["LowDM"]
     #particles = ["Electron", "Muon", "Photon"]
     particles = ["Photon"]
     selections = ["passPhotonSelectionLoose", "passPhotonSelectionMedium", "passPhotonSelectionTight"]
-    #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4"]
-    variables = ["nj"]
+    #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
+    variables = []
+    # hack to fix problem of missing underscore for HighDM dR variables
+    variable_map = {}
+    variable_map["LowDM"]   = variables + ["dR_RecoPhotonGenPhoton_0to2", "dR_RecoPhotonGenParton_0to2"]
+    variable_map["HighDM"]  = variables + ["dR_RecoPhotonGenPhoton0to2",  "dR_RecoPhotonGenParton0to2"]
+    #variables = ["nj"]
     cuts = ["jetpt20", "jetpt30", "jetpt40"] 
     j = open(json_file)
     f = open("stack_snippet.tex",'w')
@@ -175,15 +184,17 @@ def makeSlidesCuts(json_file, verbose):
     # example: DataMC_Photon_LowDM_nj_passPhotonSelectionLoose_jetpt20_2016
     
     for p in particles:
-        for v in variables:
-            for e in eras:
-                for r in regions:
+        for r in regions:
+            variableList = variable_map[r]
+            for v in variableList:
+                for e in eras:
                     for s in selections:
                         if verbose:
                             print "Making slide for %s %s %s %s %s" % (p, v, e, r, s)
+                        e_tex = e.replace("_", " ")
                         v_tex = variables_tex[v]
                         fileString = "DataMC_%s_%s_%s_%s" % (p, r, v, s)
-                        title = "%s CR %s: %s, %s - %s" % (p, e, r, s, v_tex)
+                        title = "%s CR %s: %s, %s - %s" % (p, e_tex, r, s, v_tex)
                         writeSlideCuts(f, runMap, fileString, v_tex, cuts, e, title)
     
     

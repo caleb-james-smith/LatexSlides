@@ -44,20 +44,29 @@
 \end{frame}
 
 \begin{frame}{Summary}
-Data vs MC Comparisons
+Data vs MC in Photon CR
 \begin{itemize}
-\item Electron, Muon, and Photon Control Regions
 \item Low \dm and High \dm selections
+\item Jet $p_T > 20$ GeV requirement
 \begin{itemize}
-\item Z mass cut applied in all lepton plots except for Z mass plot
+\item Nb, mtb, and ptb
 \end{itemize}
-\item Jet $p_T > 30$ GeV requirement for calculating nJets, dPhi, HT, and sMET
-\item Jet $p_T > 20$ GeV requirement for calculating Nb, mtb, and ptb
-\item Photon selection is still only \pt, \texeta, and medium ID
+\item Jet $p_T > 20, 30, 40$ GeV requirements
 \begin{itemize}
-\item Photon selection of direct, fragmentation, and fake photons will be used in future iterations
-\item Increasing the photon $p_{T} > 220$ GeV cut may be tried in future iterations
+\item nJets, dPhi, HT, sMET, JetID, and HEMVeto
 \end{itemize}
+\item Photon selection has \pt and \texeta requirements, as well as loose, medium, and tight IDs
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Changes}
+Recent Changes
+\begin{itemize}
+\item Remove QCD 100 to 200 HT sample.
+\item Split 2017 into periods B-E and period F and use different pile-up weights.
+\item Try jet pt cuts 20, 30, 40 and photon IDs loose, medium, and tight.
+\item Calculate JetID and HEMVeto using different jet pt cuts.
+\item Always use loose photons for modified MET and jet cleaning, even when selecting one medium or tight photon.
 \end{itemize}
 \end{frame}
 
