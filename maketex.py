@@ -160,7 +160,8 @@ def makeSlidesEras(json_file, verbose):
     j.close()
 
 def makeSlidesCuts(runInfo, useJson, verbose):
-    eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
+    #eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
+    eras = ["2016", "2017_BE", "2017_F", "2018_PostHEM"]
     regions = ["LowDM", "HighDM"]
     particles = ["Electron", "Muon", "Photon"]
     #particles = ["Electron", "Muon"]
