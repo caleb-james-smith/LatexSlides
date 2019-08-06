@@ -97,7 +97,7 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
     writeLine(f, "\\end{frame}")
 
 # make slide with multiple cuts
-def writeSlideCuts(f, runMap, fileString, variable, cuts, era, title):
+def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
     n = len(cuts)
     width = 1.0 / float(n)
     x = 1
@@ -105,10 +105,7 @@ def writeSlideCuts(f, runMap, fileString, variable, cuts, era, title):
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for c in cuts:
         c_tex = cuts_tex[c]
-        # example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
-        # example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
-        d = runMap[era]
-        name = "../%s/%s_%s_%s" % (d, fileString, c, era)
+        name = "../%s/%s_%s_%s" % (directory, fileString, c, era)
         writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
         writeLine(f, "\\begin{figure}")
         writeLine(f, "\\centering")
@@ -124,8 +121,9 @@ def makeSlidesEras(json_file, verbose):
     eras = ["2016", "2017", "2018_AB", "2018_CD"]
     #eras = ["2016"]
     regions = ["LowDM", "HighDM"]
-    #particles = ["Electron", "Muon", "Photon"]
-    particles = ["Photon"]
+    particles = ["Electron", "Muon", "Photon"]
+    #particles = ["Electron", "Muon"]
+    #particles = ["Photon"]
     variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4"]
     j = open(json_file)
     f = open("stack_snippet.tex",'w')
@@ -161,25 +159,27 @@ def makeSlidesEras(json_file, verbose):
     f.close()
     j.close()
 
-def makeSlidesCuts(json_file, verbose):
+def makeSlidesCuts(runInfo, useJson, verbose):
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
-    #eras = ["2016"]
     regions = ["LowDM", "HighDM"]
-    #regions = ["LowDM"]
-    #particles = ["Electron", "Muon", "Photon"]
-    particles = ["Photon"]
-    selections = ["passPhotonSelectionLoose", "passPhotonSelectionMedium", "passPhotonSelectionTight"]
+    particles = ["Electron", "Muon", "Photon"]
+    #particles = ["Electron", "Muon"]
+    #particles = ["Photon"]
     #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
-    variables = []
-    # hack to fix problem of missing underscore for HighDM dR variables
+    variables = ["nj", "met"]
     variable_map = {}
-    variable_map["LowDM"]   = variables + ["dR_RecoPhotonGenPhoton_0to2", "dR_RecoPhotonGenParton_0to2"]
-    variable_map["HighDM"]  = variables + ["dR_RecoPhotonGenPhoton0to2",  "dR_RecoPhotonGenParton0to2"]
-    #variables = ["nj"]
+    variable_map["LowDM"]   = variables
+    variable_map["HighDM"]  = variables
+    # hack to fix problem of missing underscore for HighDM dR variables
+    #variable_map["LowDM"]   = variables + ["dR_RecoPhotonGenPhoton_0to2", "dR_RecoPhotonGenParton_0to2"]
+    #variable_map["HighDM"]  = variables + ["dR_RecoPhotonGenPhoton0to2",  "dR_RecoPhotonGenParton0to2"]
     cuts = ["jetpt20", "jetpt30", "jetpt40"] 
-    j = open(json_file)
+    
+    if useJson:
+        j = open(runInfo)
+        runMap = json.load(j)
+    
     f = open("stack_snippet.tex",'w')
-    runMap = json.load(j)
 
     # example: DataMC_Photon_LowDM_nj_passPhotonSelectionLoose_jetpt20_2016
     
@@ -188,35 +188,42 @@ def makeSlidesCuts(json_file, verbose):
             variableList = variable_map[r]
             for v in variableList:
                 for e in eras:
-                    for s in selections:
-                        if verbose:
-                            print "Making slide for %s %s %s %s %s" % (p, v, e, r, s)
-                        e_tex = e.replace("_", " ")
-                        v_tex = variables_tex[v]
-                        fileString = "DataMC_%s_%s_%s_%s" % (p, r, v, s)
-                        title = "%s CR %s: %s, %s - %s" % (p, e_tex, r, s, v_tex)
-                        writeSlideCuts(f, runMap, fileString, v_tex, cuts, e, title)
+                    if useJson:
+                        directory = runMap[e]
+                    else:
+                        directory = runInfo
+                    if verbose:
+                        print "Making slide for %s %s %s %s" % (p, r, v, e)
+                    e_tex = e.replace("_", " ")
+                    v_tex = variables_tex[v]
+                    fileString = "DataMC_%s_%s_%s" % (p, r, v)
+                    title = "%s CR %s: %s - %s" % (p, e_tex, r, v_tex)
+                    writeSlideCuts(f, directory, fileString, v_tex, cuts, e, title)
     
     
     f.close()
-    j.close()
+    if useJson:
+        j.close()
 
 def main():
     # options
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--directory",    "-d", default="",                             help="directory containing runs")
     parser.add_argument("--json_file",    "-j", default="",                             help="json file containing runs")
     parser.add_argument("--verbose",      "-v", default = False, action = "store_true", help="verbose flag to print more things")
     
     options     = parser.parse_args()
+    directory   = options.directory
     json_file   = options.json_file
     verbose     = options.verbose
-
-    if not json_file:
-        print "Please enter a json file containing runs using the -j option."
+    
+    if directory:
+        makeSlidesCuts(directory, False, verbose)
+    elif json_file:
+        makeSlidesCuts(json_file, True, verbose)
+    else:
+        print "Please enter a direcotry (using -d) or a json file (using -d) containing runs."
         exit(1)
-
-    #makeSlidesEras(json_file, verbose)
-    makeSlidesCuts(json_file, verbose)
 
 
 if __name__ == '__main__':
