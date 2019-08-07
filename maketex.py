@@ -23,6 +23,11 @@ tex_snippet_4plot = """
         \\includegraphics[width=0.25\\textwidth]{{"%s"}.pdf}
     \\end{frame}
     """
+# latex version of regions
+regions_tex = {
+                "LowDM"   : "Low $\Delta m$",
+                "HighDM"  : "High $\Delta m$",
+}
 # latex versions of variables
 variables_tex = {
                     "nj"                                : "$N_{jets}$", 
@@ -56,6 +61,12 @@ cuts_tex = {
                 "jetpt30" : "Jet $p_{T} > 30$ GeV",
                 "jetpt40" : "Jet $p_{T} > 40$ GeV",
 }
+# latex version of particles
+particles_tex = {
+                "Electron"  : "Electron CR",
+                "Muon"      : "Muon CR",
+                "Photon"    : "Photon CR",
+}
 
 def write(f,globString,title):
     plotList = glob.glob(globString)
@@ -72,6 +83,16 @@ def write(f,globString,title):
 def writeLine(f, line):
     f.write(line + "\n")
 
+def writeFigure(f, fileName, title, caption, x):
+    writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
+    writeLine(f, "\\begin{figure}")
+    writeLine(f, "\\centering")
+    writeLine(f, "%s\par\medskip" % title)
+    writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (fileName))
+    writeLine(f, "\\caption{%s}" % caption)
+    writeLine(f, "\\end{figure}")
+    writeLine(f, "\\end{textblock*}")
+
 # make slide with multiple eras on one slide
 def writeSlideEras(f, runMap, fileString, variable, eras, title):
     n = len(eras)
@@ -84,20 +105,14 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
         # example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
         # example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
         d = runMap[e]
-        name = "../%s/%s_%s" % (d, fileString, e)
-        writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
-        writeLine(f, "\\begin{figure}")
-        writeLine(f, "\\centering")
-        writeLine(f, "\\textbf{%s}\par\medskip" % e_tex)
-        writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (name))
-        writeLine(f, "\\caption{%s}" % variable)
-        writeLine(f, "\\end{figure}")
-        writeLine(f, "\\end{textblock*}")
+        fileName = "../%s/%s_%s" % (d, fileString, e)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, c_tex, variable, x)
         x += dx
     writeLine(f, "\\end{frame}")
 
 # make slide with multiple cuts
-def writeSlideCuts(f, runMap, fileString, variable, cuts, era, title):
+def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
     n = len(cuts)
     width = 1.0 / float(n)
     x = 1
@@ -105,18 +120,24 @@ def writeSlideCuts(f, runMap, fileString, variable, cuts, era, title):
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for c in cuts:
         c_tex = cuts_tex[c]
-        # example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
-        # example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
-        d = runMap[era]
-        name = "../%s/%s_%s_%s" % (d, fileString, c, era)
-        writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
-        writeLine(f, "\\begin{figure}")
-        writeLine(f, "\\centering")
-        writeLine(f, "%s\par\medskip" % c_tex)
-        writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (name))
-        writeLine(f, "\\caption{%s}" % variable)
-        writeLine(f, "\\end{figure}")
-        writeLine(f, "\\end{textblock*}")
+        fileName = "../%s/%s_%s_%s" % (directory, fileString, c, era)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, c_tex, variable, x)
+        x += dx
+    writeLine(f, "\\end{frame}")
+
+# make slide with multiple particles
+def writeSlideParticles(f, directory, fileString, variable, particles, era, title):
+    n = len(particles)
+    width = 1.0 / float(n)
+    x = 1
+    dx = int(15 / n)
+    writeLine(f, "\\begin{frame}{%s}" % (title))
+    for p in particles:
+        p_tex = particles_tex[p]
+        fileName = "../%s/DataMC_%s_%s_%s" % (directory, p, fileString, era)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, p_tex, variable, x)
         x += dx
     writeLine(f, "\\end{frame}")
 
@@ -124,8 +145,9 @@ def makeSlidesEras(json_file, verbose):
     eras = ["2016", "2017", "2018_AB", "2018_CD"]
     #eras = ["2016"]
     regions = ["LowDM", "HighDM"]
-    #particles = ["Electron", "Muon", "Photon"]
-    particles = ["Photon"]
+    particles = ["Electron", "Muon", "Photon"]
+    #particles = ["Electron", "Muon"]
+    #particles = ["Photon"]
     variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4"]
     j = open(json_file)
     f = open("stack_snippet.tex",'w')
@@ -161,62 +183,89 @@ def makeSlidesEras(json_file, verbose):
     f.close()
     j.close()
 
-def makeSlidesCuts(json_file, verbose):
+def makeSlides(runInfo, useJson, verbose):
+    useDiffCuts = False
+    useDiffParticles = True
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
-    #eras = ["2016"]
     regions = ["LowDM", "HighDM"]
-    #regions = ["LowDM"]
-    #particles = ["Electron", "Muon", "Photon"]
-    particles = ["Photon"]
-    selections = ["passPhotonSelectionLoose", "passPhotonSelectionMedium", "passPhotonSelectionTight"]
+    particles = ["Electron", "Muon", "Photon"]
     #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
-    variables = []
-    # hack to fix problem of missing underscore for HighDM dR variables
+    variables = ["nj", "met", "ht"]
     variable_map = {}
-    variable_map["LowDM"]   = variables + ["dR_RecoPhotonGenPhoton_0to2", "dR_RecoPhotonGenParton_0to2"]
-    variable_map["HighDM"]  = variables + ["dR_RecoPhotonGenPhoton0to2",  "dR_RecoPhotonGenParton0to2"]
-    #variables = ["nj"]
+    variable_map["LowDM"]   = variables
+    variable_map["HighDM"]  = variables
     cuts = ["jetpt20", "jetpt30", "jetpt40"] 
-    j = open(json_file)
+    
+    if useJson:
+        j = open(runInfo)
+        runMap = json.load(j)
+    
     f = open("stack_snippet.tex",'w')
-    runMap = json.load(j)
 
     # example: DataMC_Photon_LowDM_nj_passPhotonSelectionLoose_jetpt20_2016
     
-    for p in particles:
+    if useDiffCuts:
+        for p in particles:
+            for r in regions:
+                variableList = variable_map[r]
+                for v in variableList:
+                    for e in eras:
+                        if useJson:
+                            directory = runMap[e]
+                        else:
+                            directory = runInfo
+                        if verbose:
+                            print "Making slide for %s %s %s %s" % (p, r, v, e)
+                        r_tex = regions_tex[r]
+                        v_tex = variables_tex[v]
+                        e_tex = e.replace("_", " ")
+                        fileString = "DataMC_%s_%s_%s" % (p, r, v)
+                        title = "%s CR %s (%s): %s" % (p, e_tex, r_tex, v_tex)
+                        writeSlideCuts(f, directory, fileString, v_tex, cuts, e, title)
+    elif useDiffParticles:
+        cut = "jetpt20"
         for r in regions:
             variableList = variable_map[r]
             for v in variableList:
                 for e in eras:
-                    for s in selections:
-                        if verbose:
-                            print "Making slide for %s %s %s %s %s" % (p, v, e, r, s)
-                        e_tex = e.replace("_", " ")
-                        v_tex = variables_tex[v]
-                        fileString = "DataMC_%s_%s_%s_%s" % (p, r, v, s)
-                        title = "%s CR %s: %s, %s - %s" % (p, e_tex, r, s, v_tex)
-                        writeSlideCuts(f, runMap, fileString, v_tex, cuts, e, title)
+                    if useJson:
+                        directory = runMap[e]
+                    else:
+                        directory = runInfo
+                    if verbose:
+                        print "Making slide for %s %s %s %s" % (r, cut, v, e)
+                    r_tex = regions_tex[r]
+                    v_tex = variables_tex[v]
+                    e_tex = e.replace("_", " ")
+                    c_tex = cuts_tex[cut]
+                    fileString = "%s_%s_%s" % (r, v, cut)
+                    title = "%s %s (%s): %s" % (e_tex, r_tex, c_tex, v_tex)
+                    writeSlideParticles(f, directory, fileString, v_tex, particles, e, title)
     
     
     f.close()
-    j.close()
+    if useJson:
+        j.close()
 
 def main():
     # options
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--directory",    "-d", default="",                             help="directory containing runs")
     parser.add_argument("--json_file",    "-j", default="",                             help="json file containing runs")
     parser.add_argument("--verbose",      "-v", default = False, action = "store_true", help="verbose flag to print more things")
     
     options     = parser.parse_args()
+    directory   = options.directory
     json_file   = options.json_file
     verbose     = options.verbose
-
-    if not json_file:
-        print "Please enter a json file containing runs using the -j option."
+    
+    if directory:
+        makeSlides(directory, False, verbose)
+    elif json_file:
+        makeSlides(json_file, True, verbose)
+    else:
+        print "Please enter a direcotry (using -d) or a json file (using -d) containing runs."
         exit(1)
-
-    #makeSlidesEras(json_file, verbose)
-    makeSlidesCuts(json_file, verbose)
 
 
 if __name__ == '__main__':

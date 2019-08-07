@@ -29,11 +29,15 @@
 \newcommand{\dphi}{$\Delta \phi$~}
 \newcommand{\pt}{$p_{T}$~}
 \newcommand{\texeta}{$\eta$~}
+\newcommand{\nj}{$N_\mathrm{jets}$~}
+\newcommand{\met}{$\cancel{E}_{T}$~}
+\newcommand{\lowdm}{low $\Delta m$~}
+\newcommand{\highdm}{high $\Delta m$~}
 
 \title{Z to Invisible: Data and MC Stack Plots}
 
 \author{\textcolor{DodgerBlueDark}{\bf C.~Smith\inst{1}}}
-\institute{\inst{1} Baylor}
+\institute{\inst{1} Baylor University}
 \date{\today}
 
 \renewcommand{\arraystretch}{1.2}
@@ -43,30 +47,53 @@
 \maketitle
 \end{frame}
 
-\begin{frame}{Summary}
-Data vs MC in Photon CR
+\begin{frame}{Overview}
+Data vs MC in Lepton and Photon CRs
 \begin{itemize}
 \item Low \dm and High \dm selections
-\item Jet $p_T > 20$ GeV requirement
+\item Medium IDs used for electrons, muons, and photons.
+\item For Nb, mtb, and ptb
 \begin{itemize}
-\item Nb, mtb, and ptb
+\item Jet $p_T > 20$ GeV requirement (constant)
 \end{itemize}
-\item Jet $p_T > 20, 30, 40$ GeV requirements
+\item For JetID and HEMVeto
 \begin{itemize}
-\item nJets, dPhi, HT, sMET, JetID, and HEMVeto
+\item Jet $p_T > 30$ GeV requirement (constant)
 \end{itemize}
-\item Photon selection has \pt and \texeta requirements, as well as loose, medium, and tight IDs
+\item For the Resolved TopTagger
+\begin{itemize}
+\item Jet $p_T > 40, 30, 20$ GeV for the three input jets (constant)
+\end{itemize}
+\item nJets, dPhi, HT, sMET
+\begin{itemize}
+\item Jet $p_T > 20, 30, 40$ GeV requirements (tried each cut separately)
+\end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Changes}
 Recent Changes
 \begin{itemize}
-\item Remove QCD 100 to 200 HT sample.
-\item Split 2017 into periods B-E and period F and use different pile-up weights.
-\item Try jet pt cuts 20, 30, 40 and photon IDs loose, medium, and tight.
-\item Calculate JetID and HEMVeto using different jet pt cuts.
-\item Always use loose photons for modified MET and jet cleaning, even when selecting one medium or tight photon.
+\item Fixed bug so that we save histograms with variables calculated with different jet pts.
+\item Only use medium photon ID for jet cleaning, modified MET, and selection.
+\item Use different jet pt cuts for Z to NuNu MC (used for background prediction).
+\item Lepton CR shows number of events, but photon CR is normalized to unit area (both Data and MC).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusions}
+Conclusions (somewhat era dependent)
+\begin{itemize}
+\item For the lepton CR, increasing the jet \pt cut from 20 to 30 GeV improves Data vs. MC agreement cost of loss in statistics.
+\begin{itemize}
+\item Loss of approx. 15\% of events in \lowdm and 55\% of events in \highdm.
+\item \nj shows improvement and \met shows little change.
+\end{itemize}
+\item For the photon CR, increasing the jet \pt cut from 20 to 30 GeV improves Data vs. MC agreement cost of loss in statistics.
+\begin{itemize}
+\item Loss of approx. 18\% of events in \lowdm and 58\% of events in \highdm.
+\item \nj shows improvement and \met shows little change.
+\end{itemize}
 \end{itemize}
 \end{frame}
 
