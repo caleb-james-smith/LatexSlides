@@ -72,6 +72,16 @@ def write(f,globString,title):
 def writeLine(f, line):
     f.write(line + "\n")
 
+def writeFigure(f, fileName, title, caption, x):
+    writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
+    writeLine(f, "\\begin{figure}")
+    writeLine(f, "\\centering")
+    writeLine(f, "%s\par\medskip" % title)
+    writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (fileName))
+    writeLine(f, "\\caption{%s}" % caption)
+    writeLine(f, "\\end{figure}")
+    writeLine(f, "\\end{textblock*}")
+
 # make slide with multiple eras on one slide
 def writeSlideEras(f, runMap, fileString, variable, eras, title):
     n = len(eras)
@@ -84,15 +94,9 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
         # example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
         # example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
         d = runMap[e]
-        name = "../%s/%s_%s" % (d, fileString, e)
-        writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
-        writeLine(f, "\\begin{figure}")
-        writeLine(f, "\\centering")
-        writeLine(f, "\\textbf{%s}\par\medskip" % e_tex)
-        writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (name))
-        writeLine(f, "\\caption{%s}" % variable)
-        writeLine(f, "\\end{figure}")
-        writeLine(f, "\\end{textblock*}")
+        fileName = "../%s/%s_%s" % (d, fileString, e)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, c_tex, variable, x)
         x += dx
     writeLine(f, "\\end{frame}")
 
@@ -105,15 +109,9 @@ def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for c in cuts:
         c_tex = cuts_tex[c]
-        name = "../%s/%s_%s_%s" % (directory, fileString, c, era)
-        writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
-        writeLine(f, "\\begin{figure}")
-        writeLine(f, "\\centering")
-        writeLine(f, "%s\par\medskip" % c_tex)
-        writeLine(f, "\\includegraphics[width=1.0\\textwidth]{{\"%s\"}.pdf}" % (name))
-        writeLine(f, "\\caption{%s}" % variable)
-        writeLine(f, "\\end{figure}")
-        writeLine(f, "\\end{textblock*}")
+        fileName = "../%s/%s_%s_%s" % (directory, fileString, c, era)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, c_tex, variable, x)
         x += dx
     writeLine(f, "\\end{frame}")
 
@@ -164,16 +162,11 @@ def makeSlidesCuts(runInfo, useJson, verbose):
     eras = ["2016", "2017_BE", "2017_F", "2018_PostHEM"]
     regions = ["LowDM", "HighDM"]
     particles = ["Electron", "Muon", "Photon"]
-    #particles = ["Electron", "Muon"]
-    #particles = ["Photon"]
     #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
     variables = ["nj", "met"]
     variable_map = {}
     variable_map["LowDM"]   = variables
     variable_map["HighDM"]  = variables
-    # hack to fix problem of missing underscore for HighDM dR variables
-    #variable_map["LowDM"]   = variables + ["dR_RecoPhotonGenPhoton_0to2", "dR_RecoPhotonGenParton_0to2"]
-    #variable_map["HighDM"]  = variables + ["dR_RecoPhotonGenPhoton0to2",  "dR_RecoPhotonGenParton0to2"]
     cuts = ["jetpt20", "jetpt30", "jetpt40"] 
     
     if useJson:
