@@ -23,6 +23,11 @@ tex_snippet_4plot = """
         \\includegraphics[width=0.25\\textwidth]{{"%s"}.pdf}
     \\end{frame}
     """
+# latex version of regions
+regions_tex = {
+                "LowDM"   : "Low $\Delta m$",
+                "HighDM"  : "High $\Delta m$",
+}
 # latex versions of variables
 variables_tex = {
                     "nj"                                : "$N_{jets}$", 
@@ -55,6 +60,12 @@ cuts_tex = {
                 "jetpt20" : "Jet $p_{T} > 20$ GeV",
                 "jetpt30" : "Jet $p_{T} > 30$ GeV",
                 "jetpt40" : "Jet $p_{T} > 40$ GeV",
+}
+# latex version of particles
+particles_tex = {
+                "Electron"  : "Electron CR",
+                "Muon"      : "Muon CR",
+                "Photon"    : "Photon CR",
 }
 
 def write(f,globString,title):
@@ -115,6 +126,21 @@ def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
         x += dx
     writeLine(f, "\\end{frame}")
 
+# make slide with multiple particles
+def writeSlideParticles(f, directory, fileString, variable, particles, era, title):
+    n = len(particles)
+    width = 1.0 / float(n)
+    x = 1
+    dx = int(15 / n)
+    writeLine(f, "\\begin{frame}{%s}" % (title))
+    for p in particles:
+        p_tex = particles_tex[p]
+        fileName = "../%s/DataMC_%s_%s_%s" % (directory, p, fileString, era)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, p_tex, variable, x)
+        x += dx
+    writeLine(f, "\\end{frame}")
+
 def makeSlidesEras(json_file, verbose):
     eras = ["2016", "2017", "2018_AB", "2018_CD"]
     #eras = ["2016"]
@@ -157,13 +183,14 @@ def makeSlidesEras(json_file, verbose):
     f.close()
     j.close()
 
-def makeSlidesCuts(runInfo, useJson, verbose):
-    #eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
-    eras = ["2016", "2017_BE", "2017_F", "2018_PostHEM"]
+def makeSlides(runInfo, useJson, verbose):
+    useDiffCuts = False
+    useDiffParticles = True
+    eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
     regions = ["LowDM", "HighDM"]
     particles = ["Electron", "Muon", "Photon"]
     #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
-    variables = ["nj", "met"]
+    variables = ["nj", "met", "ht"]
     variable_map = {}
     variable_map["LowDM"]   = variables
     variable_map["HighDM"]  = variables
@@ -177,7 +204,26 @@ def makeSlidesCuts(runInfo, useJson, verbose):
 
     # example: DataMC_Photon_LowDM_nj_passPhotonSelectionLoose_jetpt20_2016
     
-    for p in particles:
+    if useDiffCuts:
+        for p in particles:
+            for r in regions:
+                variableList = variable_map[r]
+                for v in variableList:
+                    for e in eras:
+                        if useJson:
+                            directory = runMap[e]
+                        else:
+                            directory = runInfo
+                        if verbose:
+                            print "Making slide for %s %s %s %s" % (p, r, v, e)
+                        r_tex = regions_tex[r]
+                        v_tex = variables_tex[v]
+                        e_tex = e.replace("_", " ")
+                        fileString = "DataMC_%s_%s_%s" % (p, r, v)
+                        title = "%s CR %s (%s): %s" % (p, e_tex, r_tex, v_tex)
+                        writeSlideCuts(f, directory, fileString, v_tex, cuts, e, title)
+    elif useDiffParticles:
+        cut = "jetpt20"
         for r in regions:
             variableList = variable_map[r]
             for v in variableList:
@@ -187,12 +233,14 @@ def makeSlidesCuts(runInfo, useJson, verbose):
                     else:
                         directory = runInfo
                     if verbose:
-                        print "Making slide for %s %s %s %s" % (p, r, v, e)
-                    e_tex = e.replace("_", " ")
+                        print "Making slide for %s %s %s %s" % (r, cut, v, e)
+                    r_tex = regions_tex[r]
                     v_tex = variables_tex[v]
-                    fileString = "DataMC_%s_%s_%s" % (p, r, v)
-                    title = "%s CR %s: %s - %s" % (p, e_tex, r, v_tex)
-                    writeSlideCuts(f, directory, fileString, v_tex, cuts, e, title)
+                    e_tex = e.replace("_", " ")
+                    c_tex = cuts_tex[cut]
+                    fileString = "%s_%s_%s" % (r, v, cut)
+                    title = "%s %s (%s): %s" % (e_tex, r_tex, c_tex, v_tex)
+                    writeSlideParticles(f, directory, fileString, v_tex, particles, e, title)
     
     
     f.close()
@@ -212,9 +260,9 @@ def main():
     verbose     = options.verbose
     
     if directory:
-        makeSlidesCuts(directory, False, verbose)
+        makeSlides(directory, False, verbose)
     elif json_file:
-        makeSlidesCuts(json_file, True, verbose)
+        makeSlides(json_file, True, verbose)
     else:
         print "Please enter a direcotry (using -d) or a json file (using -d) containing runs."
         exit(1)
