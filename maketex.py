@@ -97,7 +97,6 @@ def writeFigure(f, fileName, title, caption, x):
 # make slide with multiple eras on one slide
 def writeSlideEras(f, runMap, fileString, variable, eras, title):
     n = len(eras)
-    width = 1.0 / float(n)
     x = 0
     dx = int(16 / n)
     writeLine(f, "\\begin{frame}{%s}" % (title))
@@ -115,7 +114,6 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
 # make slide with multiple cuts
 def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
     n = len(cuts)
-    width = 1.0 / float(n)
     x = 3
     dx = int(15 / n)
     writeLine(f, "\\begin{frame}{%s}" % (title))
@@ -130,7 +128,6 @@ def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
 # make slide with multiple particles
 def writeSlideParticles(f, directory, fileString, variable, particles, era, title):
     n = len(particles)
-    width = 1.0 / float(n)
     x = 1
     dx = int(15 / n)
     writeLine(f, "\\begin{frame}{%s}" % (title))
