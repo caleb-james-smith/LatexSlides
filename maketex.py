@@ -116,7 +116,7 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
 def writeSlideCuts(f, directory, fileString, variable, cuts, era, title):
     n = len(cuts)
     width = 1.0 / float(n)
-    x = 1
+    x = 3
     dx = int(15 / n)
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for c in cuts:
@@ -185,8 +185,8 @@ def makeSlidesEras(json_file, verbose):
     j.close()
 
 def makeSlides(runInfo, useJson, verbose):
-    useDiffCuts = False
-    useDiffParticles = True
+    useDiffCuts = True
+    useDiffParticles = False
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
     #regions = ["LowDM", "HighDM"]
     regions = ["LowDM", "LowDM_Tight", "HighDM"]
@@ -198,7 +198,7 @@ def makeSlides(runInfo, useJson, verbose):
     variable_map["LowDM"]   = variables
     variable_map["LowDM_Tight"]   = variables
     variable_map["HighDM"]  = variables
-    cuts = ["jetpt20", "jetpt30", "jetpt40"] 
+    cuts = ["jetpt20", "jetpt30"] 
     
     if useJson:
         j = open(runInfo)
