@@ -25,8 +25,9 @@ tex_snippet_4plot = """
     """
 # latex version of regions
 regions_tex = {
-                "LowDM"   : "Low $\Delta m$",
-                "HighDM"  : "High $\Delta m$",
+                "LowDM"         : "Low $\Delta m$",
+                "LowDM_Tight"   : "Low $\Delta m$ Tight",
+                "HighDM"        : "High $\Delta m$",
 }
 # latex versions of variables
 variables_tex = {
@@ -187,12 +188,15 @@ def makeSlides(runInfo, useJson, verbose):
     useDiffCuts = False
     useDiffParticles = True
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
-    regions = ["LowDM", "HighDM"]
-    particles = ["Electron", "Muon", "Photon"]
+    #regions = ["LowDM", "HighDM"]
+    regions = ["LowDM", "LowDM_Tight", "HighDM"]
+    #particles = ["Electron", "Muon", "Photon"]
+    particles = ["Photon"]
     #variables = ["nj", "ht", "met", "metphi", "dPhi1", "dPhi2", "dPhi3", "dPhi4", "PhotonPt", "PhotonEta"]
     variables = ["nj", "met", "ht"]
     variable_map = {}
     variable_map["LowDM"]   = variables
+    variable_map["LowDM_Tight"]   = variables
     variable_map["HighDM"]  = variables
     cuts = ["jetpt20", "jetpt30", "jetpt40"] 
     
