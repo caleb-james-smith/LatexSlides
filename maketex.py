@@ -1,7 +1,8 @@
 import glob
 import json
 import argparse
-    
+import enum
+
 tex_snippet_1plot = """ 
     \\begin{frame}{%s}
         \\includegraphics[width=0.5\\textwidth]{{"%s"}.pdf}
@@ -68,6 +69,13 @@ particles_tex = {
                 "Muon"      : "Muon CR",
                 "Photon"    : "Photon CR",
 }
+
+# enum class to specifiy behavior
+class Iterable(enum.Enum):
+    eras = 1
+    regions = 2
+    particles = 3
+    cuts = 4
 
 def write(f,globString,title):
     plotList = glob.glob(globString)
@@ -182,8 +190,7 @@ def makeSlidesEras(json_file, verbose):
     j.close()
 
 def makeSlides(runInfo, useJson, verbose):
-    useDiffCuts = True
-    useDiffParticles = False
+    iterable = Iterable.cuts
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
     #regions = ["LowDM", "HighDM"]
     regions = ["LowDM", "LowDM_Tight", "HighDM"]
@@ -205,7 +212,7 @@ def makeSlides(runInfo, useJson, verbose):
 
     # example: DataMC_Photon_LowDM_nj_passPhotonSelectionLoose_jetpt20_2016
     
-    if useDiffCuts:
+    if iterable is Iterable.cuts:
         for p in particles:
             for r in regions:
                 variableList = variable_map[r]
@@ -223,7 +230,7 @@ def makeSlides(runInfo, useJson, verbose):
                         fileString = "DataMC_%s_%s_%s" % (p, r, v)
                         title = "%s CR %s (%s): %s" % (p, e_tex, r_tex, v_tex)
                         writeSlideCuts(f, directory, fileString, v_tex, cuts, e, title)
-    elif useDiffParticles:
+    elif iterable is Iterable.particles:
         cut = "jetpt20"
         for r in regions:
             variableList = variable_map[r]
