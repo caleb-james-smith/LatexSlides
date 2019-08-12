@@ -6,6 +6,7 @@
 \usepackage[absolute,overlay]{textpos}
 \usepackage{graphicx}
 \usepackage{cancel}
+\usepackage[T1]{fontenc}
 
 \def\blue{\color{DodgerBlue}}
 \def\green{\color{Green}}
@@ -23,16 +24,20 @@
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}[miniframes theme]
 \setbeamertemplate{footline}[page number]
-\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{itemize items}[default]
+\setbeamertemplate{enumerate items}[default]
 
+\newcommand{\dr}{$\Delta R$~}
 \newcommand{\dm}{$\Delta m$~}
 \newcommand{\dphi}{$\Delta \phi$~}
 \newcommand{\pt}{$p_{T}$~}
 \newcommand{\texeta}{$\eta$~}
 \newcommand{\nj}{$N_\mathrm{jets}$~}
 \newcommand{\met}{$\cancel{E}_{T}$~}
-\newcommand{\lowdm}{low $\Delta m$~}
-\newcommand{\highdm}{high $\Delta m$~}
+\newcommand{\lowdm}{low~$\Delta m$~}
+\newcommand{\highdm}{high~$\Delta m$~}
+\newcommand{\bug}{\textbf{Bug}}
+\newcommand{\fix}{\textbf{Fix}}
 
 \title{Z to Invisible: Data and MC Stack Plots}
 
@@ -66,34 +71,55 @@ Data vs MC in Lepton and Photon CRs
 \end{itemize}
 \item nJets, dPhi, HT, sMET
 \begin{itemize}
-\item Jet $p_T > 20, 30, 40$ GeV requirements (tried each cut separately)
+\item Jet $p_T > 20, 30$ GeV requirements (tried each cut separately)
 \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Changes}
-Recent Changes
+\begin{frame}{Bug Fixes}
+\begin{enumerate}
+\item \bug: The saved histograms had variables calculated with only jet $p_{T} > 20$ GeV.
 \begin{itemize}
-\item Fixed bug so that we save histograms with variables calculated with different jet pts.
-\item Only use medium photon ID for jet cleaning, modified MET, and selection.
-\item Use different jet pt cuts for Z to NuNu MC (used for background prediction).
-\item Lepton CR shows number of events, but photon CR is normalized to unit area (both Data and MC).
+\item \fix: Save histograms with variables calculated with different jet \pt cuts.
+\end{itemize}
+\item \bug: To clean the AK8 jet collection, we were using Electron\_jetIdx, Muon\_jetIdx, and Photon\_jetIdx to match to AK8 jets, but these variables only match to AK4 jets.
+\begin{itemize}
+\item \fix: Only use \dr matching to clean AK8 jets.
+\end{itemize}
+\item \bug: When running the top tagger, we were using Jet\_matchesElectron, Jet\_matchesMuon, and Jet\_matchesPhoton to filter AK8 jets.
+\begin{itemize}
+\item \fix: Use FatJet\_matchesElectron, FatJet\_matchesMuon, and FatJet\_matchesPhoton.
+\end{itemize}
+\item \bug: To select the ISR jet, we were only using the 2016 working point for the b--tag discriminator cut to check if the AK8 subjets were b--jets.
+\begin{itemize}
+\item \fix: Use b--tag working points from 2016, 2017, and 2018 for each year respectively.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Selection Changes}
+\begin{itemize}
+\item Consistently use one photon passing ID for jet cleaning, modified MET, and selection.
+\item Use different jet $p_T > 20, 30$ GeV cuts for Z to NuNu MC which can be used for the background prediction.
+\item Use a ``tight \lowdm'' selection
+\begin{itemize}
+\item ISR jet $p_{T} > 300$ GeV
+\item $\cancel{E}_{T} > 300$ GeV
+\item Did not require exact matching to SR (low\_dm\_SB\_index != -1) as this requires further implementation.
+\end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Conclusions}
-Conclusions (somewhat era dependent)
+Photon CR: \lowdm vs. tight \lowdm
 \begin{itemize}
-\item For the lepton CR, increasing the jet \pt cut from 20 to 30 GeV improves Data vs. MC agreement cost of loss in statistics.
-\begin{itemize}
-\item Loss of approx. 15\% of events in \lowdm and 55\% of events in \highdm.
-\item \nj shows improvement and \met shows little change.
+\item Tight \lowdm  selection removes approx. 30\% more Data and MC events compared to \lowdm selection.
+\item Tight \lowdm does not show a significant improvement in Data vs. MC agreement compared to \lowdm.
 \end{itemize}
-\item For the photon CR, increasing the jet \pt cut from 20 to 30 GeV improves Data vs. MC agreement cost of loss in statistics.
+Photon CR: jet $p_{T} > 20$ GeV vs. jet $p_{T} > 30$ GeV
 \begin{itemize}
-\item Loss of approx. 18\% of events in \lowdm and 58\% of events in \highdm.
-\item \nj shows improvement and \met shows little change.
-\end{itemize}
+\item The jet $p_{T} > 30$ GeV selection removes approx. 18\%, 58\% (\lowdm, \highdm) more Data vs. MC events compared to the jet $p_{T} > 20$ GeV selection.
+\item The jet $p_{T} > 30$ GeV selection results in improved Data vs. MC agreement (mainly in 2017 and 2018) compared to the jet $p_{T} > 20$ GeV selection.
 \end{itemize}
 \end{frame}
 
