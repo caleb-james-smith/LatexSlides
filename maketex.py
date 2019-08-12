@@ -92,6 +92,8 @@ def write(f,globString,title):
 def writeLine(f, line):
     f.write(line + "\n")
 
+# example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
+# example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
 def writeFigure(f, fileName, title, caption, x):
     writeLine(f, "\\begin{textblock*}{4cm}(%dcm,2cm)" % x)
     writeLine(f, "\\begin{figure}")
@@ -110,12 +112,24 @@ def writeSlideEras(f, runMap, fileString, variable, eras, title):
     writeLine(f, "\\begin{frame}{%s}" % (title))
     for e in eras:
         e_tex = e.replace("_", " ")
-        # example: "../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"
-        # example: \includegraphics[width=0.25\textwidth]{{"../histos_DataMC_2016_27_Jun_2019_3/DataMC_Electron_LowDM_dPhi1_2016"}.pdf}
         d = runMap[e]
         fileName = "../%s/%s_%s" % (d, fileString, e)
         # use writeFigure(f, fileName, title, caption, x)
         writeFigure(f, fileName, c_tex, variable, x)
+        x += dx
+    writeLine(f, "\\end{frame}")
+
+# make slide with multiple regions
+def writeSlideRegions(f, directory, fileString, particle, variable, regions, era, title):
+    n = len(regions)
+    x = 1
+    dx = int(15 / n)
+    writeLine(f, "\\begin{frame}{%s}" % (title))
+    for r in regions:
+        r_tex = regions_tex[r]
+        fileName = "../%s/DataMC_%s_%s_%s_%s" % (directory, particle, r, fileString, era)
+        # use writeFigure(f, fileName, title, caption, x)
+        writeFigure(f, fileName, r_tex, variable, x)
         x += dx
     writeLine(f, "\\end{frame}")
 
@@ -190,7 +204,7 @@ def makeSlidesEras(json_file, verbose):
     j.close()
 
 def makeSlides(runInfo, useJson, verbose):
-    iterable = Iterable.cuts
+    iterable = Iterable.regions
     eras = ["2016", "2017_BE", "2017_F", "2018_PreHEM", "2018_PostHEM"]
     #regions = ["LowDM", "HighDM"]
     regions = ["LowDM", "LowDM_Tight", "HighDM"]
@@ -241,7 +255,7 @@ def makeSlides(runInfo, useJson, verbose):
                     else:
                         directory = runInfo
                     if verbose:
-                        print "Making slide for %s %s %s %s" % (r, cut, v, e)
+                        print "Making slide for %s %s %s %s" % (cut, r, v, e)
                     r_tex = regions_tex[r]
                     v_tex = variables_tex[v]
                     e_tex = e.replace("_", " ")
@@ -249,6 +263,23 @@ def makeSlides(runInfo, useJson, verbose):
                     fileString = "%s_%s_%s" % (r, v, cut)
                     title = "%s %s (%s): %s" % (e_tex, r_tex, c_tex, v_tex)
                     writeSlideParticles(f, directory, fileString, v_tex, particles, e, title)
+    elif iterable is Iterable.regions:
+        for p in particles:
+            for v in variables:
+                for e in eras:
+                    for c in cuts:
+                        if useJson:
+                            directory = runMap[e]
+                        else:
+                            directory = runInfo
+                        if verbose:
+                            print "Making slide for %s %s %s %s" % (p, v, e, c)
+                        v_tex = variables_tex[v]
+                        e_tex = e.replace("_", " ")
+                        c_tex = cuts_tex[c]
+                        fileString = "%s_%s" % (v, c)
+                        title = "%s CR %s (%s): %s" % (p, e_tex, c_tex, v_tex)
+                        writeSlideRegions(f, directory, fileString, p, v_tex, regions, e, title)
     
     
     f.close()
